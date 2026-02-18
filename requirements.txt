@@ -1,0 +1,21 @@
+# Core LLM
+anthropic>=0.40.0
+
+# RAG - LlamaIndex
+llama-index>=0.11.0
+llama-index-llms-anthropic>=0.3.0
+llama-index-embeddings-huggingface>=0.3.0
+llama-index-readers-file>=0.2.0
+
+# Document parsing
+python-docx>=1.1.0
+pypdf>=4.0.0
+pillow>=10.0.0
+
+# UI
+streamlit>=1.40.0
+streamlit-chat>=0.1.1
+
+# Utils
+python-dotenv>=1.0.0
+pydantic>=2.0.0
