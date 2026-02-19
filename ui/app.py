@@ -82,22 +82,25 @@ st.markdown("""
     .paste-zone {
         border: 2px dashed #00A8D6;
         border-radius: 12px;
-        padding: 16px;
+        padding: 24px 16px;
         text-align: center;
-        color: #00A8D6;
-        font-size: 0.85rem;
+        color: #FFFFFF;
+        font-size: 0.95rem;
         margin-bottom: 8px;
-        background: #F0F9FD;
+        background: rgba(0, 168, 214, 0.15);
+        cursor: pointer;
+        transition: all 0.2s;
     }
-    .stChatMessage { border-radius: 12px; }
-</style>
-""", unsafe_allow_html=True)
+    .paste-zone:hover {
+        background: rgba(0, 168, 214, 0.25);
+        border-color: #00C4A7;
+    }
 
 # ─── Composant copier-coller image (JS) ───────────────────────────────────────
 PASTE_COMPONENT = """
 <div class="paste-zone" id="paste-zone">
-    📋 <strong>Collez une capture d'écran ici</strong> (Ctrl+V / Cmd+V)<br>
-    <small>ou utilisez le bouton "Browse files" ci-dessous</small>
+    🖼️ <strong style="font-size:1.05rem">Zone de collage — Ctrl+V ici</strong><br>
+    <span style="opacity:0.8; font-size:0.85rem">Copiez une capture d'écran puis cliquez dans cette zone et faites Ctrl+V</span>
 </div>
 <canvas id="paste-canvas" style="display:none; max-width:100%; border-radius:8px; margin-top:8px;"></canvas>
 <script>
