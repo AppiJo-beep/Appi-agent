@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appi — Démos POC</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rydge-blue: #0F4C81;
+    --rydge-teal: #00A8D6;
+    --rydge-green: #00C4A7;
+    --dark: #0A1628;
+    --card-bg: #111E33;
+    --card-border: rgba(0,168,214,0.2);
+    --text-muted: #7A9BB5;
+    --white: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--dark);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background mesh */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(0,168,214,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(0,196,167,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 50% 50%, rgba(15,76,129,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 4rem 0 2rem;
+    text-align: center;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,168,214,0.12);
+    border: 1px solid rgba(0,168,214,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--rydge-teal);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--rydge-green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #FFFFFF 30%, var(--rydge-teal) 70%, var(--rydge-green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+  }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 560px;
+    margin: 0 auto 0.5rem;
+    line-height: 1.6;
+  }
+
+  .hero-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 3rem;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--rydge-green);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .section-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+
+  /* ── DÉMO CARDS ── */
+  .demos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+
+  @media (max-width: 700px) { .demos-grid { grid-template-columns: 1fr; } }
+
+  .demo-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+  }
+
+  .demo-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,168,214,0.5);
+    box-shadow: 0 16px 48px rgba(0,168,214,0.12);
+  }
+
+  .demo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--rydge-blue), var(--rydge-teal));
+  }
+
+  .demo-card.multimodal::before {
+    background: linear-gradient(90deg, var(--rydge-teal), var(--rydge-green));
+  }
+
+  .demo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+
+  .badge-mono {
+    background: rgba(15,76,129,0.4);
+    border: 1px solid rgba(15,76,129,0.6);
+    color: #7EB8E8;
+  }
+
+  .badge-multi {
+    background: rgba(0,196,167,0.15);
+    border: 1px solid rgba(0,196,167,0.4);
+    color: var(--rydge-green);
+  }
+
+  .demo-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .demo-card .platform {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-bottom: 1.2rem;
+  }
+
+  .demo-divider {
+    height: 1px;
+    background: var(--card-border);
+    margin: 1.2rem 0;
+  }
+
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.4;
+  }
+
+  .feature-list li::before {
+    content: '→';
+    color: var(--rydge-teal);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .demo-card.multimodal .feature-list li::before {
+    color: var(--rydge-green);
+  }
+
+  .demo-cta {
+    margin-top: 1.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+
+  .cta-mono {
+    background: rgba(15,76,129,0.5);
+    border: 1px solid rgba(0,168,214,0.3);
+    color: var(--rydge-teal);
+  }
+
+  .cta-mono:hover { background: rgba(0,168,214,0.2); }
+
+  .cta-multi {
+    background: rgba(0,196,167,0.15);
+    border: 1px solid rgba(0,196,167,0.4);
+    color: var(--rydge-green);
+  }
+
+  .cta-multi:hover { background: rgba(0,196,167,0.25); }
+
+  /* ── COMPARATIF ── */
+  .compare-section {
+    margin-bottom: 4rem;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .compare-row {
+    display: contents;
+  }
+
+  .compare-cell {
+    padding: 0.9rem 1.2rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-right: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+  }
+
+  .compare-cell:last-child { border-right: none; }
+
+  .compare-cell.header {
+    background: rgba(0,168,214,0.08);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    color: var(--rydge-teal);
+    text-transform: uppercase;
+  }
+
+  .compare-cell.header.multi { color: var(--rydge-green); }
+  .compare-cell.label { color: var(--text-muted); font-weight: 500; }
+  .compare-cell.val { color: rgba(255,255,255,0.85); }
+
+  .dot-yes { color: var(--rydge-green); font-weight: 700; }
+  .dot-no { color: rgba(255,255,255,0.2); }
+  .dot-partial { color: #FFB300; }
+
+  /* ── ROADMAP ── */
+  .roadmap-section {
+    margin-bottom: 4rem;
+  }
+
+  .roadmap-track {
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .roadmap-track::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--rydge-teal), var(--rydge-green), rgba(0,196,167,0.1));
+  }
+
+  .roadmap-step {
+    position: relative;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+
+  .roadmap-step.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .roadmap-step::before {
+    content: '';
+    position: absolute;
+    left: -2rem;
+    top: 8px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--rydge-teal);
+    background: var(--dark);
+    z-index: 1;
+  }
+
+  .roadmap-step.active::before {
+    background: var(--rydge-teal);
+    box-shadow: 0 0 0 4px rgba(0,168,214,0.2);
+  }
+
+  .roadmap-step.poc::before {
+    background: var(--rydge-green);
+    border-color: var(--rydge-green);
+    box-shadow: 0 0 0 4px rgba(0,196,167,0.25);
+    animation: pulse 2s infinite;
+  }
+
+  .step-inner {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+  }
+
+  .roadmap-step.active .step-inner {
+    border-color: rgba(0,168,214,0.4);
+  }
+
+  .roadmap-step.poc .step-inner {
+    border-color: rgba(0,196,167,0.4);
+    background: rgba(0,196,167,0.05);
+  }
+
+  .step-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .step-tag.now { color: var(--rydge-green); }
+  .step-tag.next { color: var(--rydge-teal); }
+
+  .step-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .step-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .step-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 0.7rem;
+  }
+
+  .chip {
+    font-size: 0.68rem;
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid rgba(0,168,214,0.25);
+    color: var(--rydge-teal);
+    background: rgba(0,168,214,0.08);
+    font-weight: 600;
+  }
+
+  .chip.green {
+    border-color: rgba(0,196,167,0.3);
+    color: var(--rydge-green);
+    background: rgba(0,196,167,0.08);
+  }
+
+  /* ── PROCHAINES ETAPES ── */
+  .next-section {
+    margin-bottom: 4rem;
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .action-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .action-card:hover {
+    border-color: rgba(0,168,214,0.4);
+    box-shadow: 0 8px 24px rgba(0,168,214,0.08);
+  }
+
+  .action-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--rydge-teal);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .action-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .action-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ── COMPÉTENCES ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 600px) { .skills-grid { grid-template-columns: 1fr; } }
+
+  .skill-card {
+    background: rgba(15,76,129,0.15);
+    border: 1px solid rgba(0,168,214,0.15);
+    border-radius: 12px;
+    padding: 1.2rem;
+  }
+
+  .skill-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--rydge-teal);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+
+  .skill-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+
+  .skill-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 2rem 0 3rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: 2rem;
+  }
+
+  .footer-logo {
+    font-size: 1.1rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--rydge-teal), var(--rydge-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.3rem;
+  }
+
+  .footer-sub {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.25);
+  }
+
+  /* ── ANIMATION ON SCROLL ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero fade-in">
+    <div class="hero-tag">POC en ligne</div>
+    <h1>Appi — Compagnon<br>d'apprentissage</h1>
+    <p class="hero-sub">Deux démos opérationnelles pour illustrer le potentiel d'un agent IA au service de l'adoption Akuiteo chez Rydge Conseil.</p>
+    <p class="hero-date">Rydge Conseil · Février 2026 · Joelle GUERRA</p>
+  </section>
+
+  <!-- SYNTHÈSE APPI -->
+  <section class="fade-in" style="margin-bottom: 4rem;">
+    <div style="background: linear-gradient(135deg, rgba(15,76,129,0.35) 0%, rgba(0,168,214,0.1) 100%); border: 1px solid rgba(0,168,214,0.25); border-radius: 20px; padding: 2.5rem; position: relative; overflow: hidden;">
+      <div style="position: absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg, var(--rydge-blue), var(--rydge-teal), var(--rydge-green));"></div>
+      <p class="section-label">Qu'est-ce qu'Appi ?</p>
+      <h2 class="section-title" style="font-size:1.5rem; margin-bottom: 1rem;">De la formation ponctuelle a l'accompagnement continu</h2>
+      <p style="font-size: 0.9rem; color: rgba(255,255,255,0.8); line-height: 1.7; margin-bottom: 1.5rem; max-width: 820px;">
+        Appi est un <strong style="color: var(--rydge-teal);">Agent d'Apprentissage Proactif et Interactif</strong> concu pour repondre a un defi croissant chez Rydge Conseil : avec 600 a 800 nouveaux entrants par an et des acquisitions continues, les formations classiques ne suffisent plus. Les collaborateurs veulent des reponses immediates, sans ticket de support ni interruption de collegue. La direction veut une visibilite reelle sur le niveau de maitrise des process.
+      </p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.1rem; border: 1px solid rgba(255,255,255,0.06);">
+          <p style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--rydge-green); margin-bottom: 0.4rem;">Mode PULL</p>
+          <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Le collaborateur vient vers l'agent</p>
+          <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;">Blocage applicatif, question process, analyse de capture — Appi repond en temps reel.</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.1rem; border: 1px solid rgba(255,255,255,0.06);">
+          <p style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--rydge-teal); margin-bottom: 0.4rem;">Mode PUSH</p>
+          <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">L'agent vient vers le collaborateur</p>
+          <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;">Onboarding automatise, nouveaux contenus, montee en competence proactive selon le profil.</p>
+        </div>
+        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 1.1rem; border: 1px solid rgba(255,255,255,0.06);">
+          <p style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #FFB300; margin-bottom: 0.4rem;">Objectif POC</p>
+          <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Valider la valeur avant d'investir</p>
+          <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;">Demontrer que LLM + RAG ameliore l'adoption Akuiteo et reduit les tickets support.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DÉMOS -->
+  <section class="fade-in" style="margin-bottom: 4rem;">
+    <p class="section-label">Les deux démos</p>
+    <h2 class="section-title">Du texte au multimodal</h2>
+    <p class="section-desc">Deux approches techniques complémentaires, construites progressivement pour démontrer la valeur ajoutée de l'IA sur l'adoption.</p>
+
+    <div class="demos-grid">
+
+      <!-- DÉMO 1 : Chatbase -->
+      <div class="demo-card" onclick="window.open('https://www.chatbase.co/chatbot-iframe/8EJaF9-VWiINjLfcQW_0Q','_blank')">
+        <div class="demo-badge badge-mono">Démo 1 · Unimodal</div>
+        <h3>Appi Simple</h3>
+        <p class="platform">Chatbase · Mode PULL texte → texte</p>
+        <div class="demo-divider"></div>
+        <ul class="feature-list">
+          <li>Questions en langage naturel sur les process Akuiteo</li>
+          <li>Réponses tirées du Livre Blanc et des modes opératoires</li>
+          <li>Interface no-code, déployable en quelques heures</li>
+          <li>Intégration web simple via widget ou lien direct</li>
+          <li>Idéal pour valider l'utilité avant d'investir techniquement</li>
+        </ul>
+        <a class="demo-cta cta-mono" href="https://www.chatbase.co/chatbot-iframe/8EJaF9-VWiINjLfcQW_0Q" target="_blank">Accéder à la démo →</a>
+      </div>
+
+      <!-- DÉMO 2 : Streamlit -->
+      <div class="demo-card multimodal" onclick="window.open('https://appi-agent-test.streamlit.app/','_blank')">
+        <div class="demo-badge badge-multi">Démo 2 · Multimodal</div>
+        <h3>Appi RAG + Vision</h3>
+        <p class="platform">Streamlit · Claude API · LlamaIndex · BGE-M3</p>
+        <div class="demo-divider"></div>
+        <ul class="feature-list">
+          <li>Questions texte + capture d'écran Akuiteo analysée par IA</li>
+          <li>Agent ReAct : recherche documentaire + analyse visuelle</li>
+          <li>3 documents indexés : Livre Blanc, Cas d'Usage, Mode Opératoire</li>
+          <li>Feedback 👍/👎 + génération automatique de ticket ServiceNow</li>
+          <li>Démontre la cible technique LLM + RAG multimodal</li>
+        </ul>
+        <a class="demo-cta cta-multi" href="https://appi-agent-test.streamlit.app/" target="_blank">Accéder à la démo →</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- COMPARATIF -->
+  <section class="compare-section fade-in">
+    <p class="section-label">Comparatif</p>
+    <h2 class="section-title">Positionnement des deux démos</h2>
+    <p class="section-desc">Chaque démo illustre une étape de la roadmap Appi.</p>
+
+    <div class="compare-grid">
+      <div class="compare-cell header">Critère</div>
+      <div class="compare-cell header">Démo 1 — Chatbase</div>
+      <div class="compare-cell header multi">Démo 2 — Streamlit</div>
+
+      <div class="compare-cell label">Modalité d'entrée</div>
+      <div class="compare-cell val">Texte uniquement</div>
+      <div class="compare-cell val">Texte + capture d'écran</div>
+
+      <div class="compare-cell label">Modalité de sortie</div>
+      <div class="compare-cell val">Texte</div>
+      <div class="compare-cell val">Texte + analyse visuelle</div>
+
+      <div class="compare-cell label">RAG documentaire</div>
+      <div class="compare-cell val"><span class="dot-partial">◐</span> Intégré Chatbase</div>
+      <div class="compare-cell val"><span class="dot-yes">✓</span> LlamaIndex + BGE-M3</div>
+
+      <div class="compare-cell label">Analyse de captures</div>
+      <div class="compare-cell val"><span class="dot-no">✗</span> Non</div>
+      <div class="compare-cell val"><span class="dot-yes">✓</span> Claude Vision</div>
+
+      <div class="compare-cell label">Feedback utilisateur</div>
+      <div class="compare-cell val"><span class="dot-no">✗</span> Non</div>
+      <div class="compare-cell val"><span class="dot-yes">✓</span> 👍/👎 + commentaire</div>
+
+      <div class="compare-cell label">Ticket ServiceNow</div>
+      <div class="compare-cell val"><span class="dot-no">✗</span> Non</div>
+      <div class="compare-cell val"><span class="dot-yes">✓</span> Génération automatique</div>
+
+      <div class="compare-cell label">Complexité déploiement</div>
+      <div class="compare-cell val">Faible (no-code)</div>
+      <div class="compare-cell val">Moyenne (Python/Cloud)</div>
+
+      <div class="compare-cell label">Correspondance roadmap</div>
+      <div class="compare-cell val">Appi Simple (Temps 1)</div>
+      <div class="compare-cell val">Appi Simple+ (Temps 2)</div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="roadmap-section fade-in">
+    <p class="section-label">Roadmap</p>
+    <h2 class="section-title">Une approche progressive en 4 temps</h2>
+    <p class="section-desc">Les deux démos couvrent les deux premières étapes. La suite dépend des décisions prises à l'issue du POC.</p>
+
+    <div class="roadmap-track">
+
+      <div class="roadmap-step poc visible">
+        <div class="step-inner">
+          <p class="step-tag now">Maintenant · Démo disponible</p>
+          <p class="step-title">POC Appi Simple — Process transverses Akuiteo</p>
+          <p class="step-desc">Deux interfaces démontrées : Chatbase (unimodal) et Streamlit (multimodal). Questions sur fiches clients, opportunités, KANBAN, saisie de temps. Mode PULL exclusivement.</p>
+          <div class="step-chips">
+            <span class="chip green">LLM + RAG</span>
+            <span class="chip green">Mode PULL</span>
+            <span class="chip green">Akuiteo CRM</span>
+            <span class="chip green">Multimodal texte + image</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-step active">
+        <div class="step-inner">
+          <p class="step-tag next">Temps 2 · À construire</p>
+          <p class="step-title">Appi Simple+ — Extension base de connaissances</p>
+          <p class="step-desc">Extension à tous les process hors production. Enrichissement documentaire : tickets support, conversations Teams, fiches de version. Réponses multimodales (texte + vidéos + captures).</p>
+          <div class="step-chips">
+            <span class="chip">RAG étendu</span>
+            <span class="chip">Vidéos indexées</span>
+            <span class="chip">Teams</span>
+            <span class="chip">Push simple</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-step">
+        <div class="step-inner">
+          <p class="step-tag">Temps 3 · Cible intermédiaire</p>
+          <p class="step-title">Appi Complexe — De l'assistance à l'apprentissage</p>
+          <p class="step-desc">Diagnostic interactif, escalade automatique vers ticket support, push proactif simple. Dashboard collaborateur avec progression individuelle par process.</p>
+          <div class="step-chips">
+            <span class="chip">Diagnostic interactif</span>
+            <span class="chip">Push proactif</span>
+            <span class="chip">Dashboard collaborateur</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-step">
+        <div class="step-inner">
+          <p class="step-tag">Temps 4 · Vision cible</p>
+          <p class="step-title">Appi Proactif — Apprentissage continu personnalisé</p>
+          <p class="step-desc">Parcours personnalisés par profil (nouvel arrivant, junior, associé), gamification, suivi KPIs direction. Intégration Teams. Plateforme agentique complète.</p>
+          <div class="step-chips">
+            <span class="chip">Plateforme agentique</span>
+            <span class="chip">MCP</span>
+            <span class="chip">Gamification</span>
+            <span class="chip">Teams natif</span>
+            <span class="chip">Dashboard DG</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PROCHAINES ÉTAPES -->
+  <section class="next-section fade-in">
+    <p class="section-label">Actions concrètes</p>
+    <h2 class="section-title">Prochaines étapes pour lancer le projet</h2>
+    <p class="section-desc">Suite à la validation du POC, 6 actions prioritaires pour passer à l'échelle.</p>
+
+    <div class="actions-grid">
+      <div class="action-card">
+        <p class="action-num">01</p>
+        <p class="action-title">Identifier un sponsor & directeur.rice projet</p>
+        <p class="action-desc">Désigner un porteur interne pour garantir la légitimité du projet et les arbitrages budgétaires.</p>
+      </div>
+      <div class="action-card">
+        <p class="action-num">02</p>
+        <p class="action-title">Constituer l'équipe projet</p>
+        <p class="action-desc">Mobiliser les 5 compétences clés : Knowledge Management, Architecture IA, Learning Design, Data/Analytics, UX Design.</p>
+      </div>
+      <div class="action-card">
+        <p class="action-num">03</p>
+        <p class="action-title">Préparer la base de connaissances</p>
+        <p class="action-desc">Structurer, nettoyer et indexer les modes opératoires, books de procédures et supports PowerPoint. Définir la gouvernance documentaire.</p>
+      </div>
+      <div class="action-card">
+        <p class="action-num">04</p>
+        <p class="action-title">Choisir la plateforme technique</p>
+        <p class="action-desc">Arbitrage entre solution cloud mutualisée et plateforme agentique dédiée. Critères : coût, sécurité, intégration Teams, scalabilité.</p>
+      </div>
+      <div class="action-card">
+        <p class="action-num">05</p>
+        <p class="action-title">Planifier le pilote & critères Go/No-Go</p>
+        <p class="action-desc">Définir le périmètre pilote (process cœur Akuiteo), les KPIs de succès (taux de satisfaction, réduction tickets) et le planning.</p>
+      </div>
+      <div class="action-card">
+        <p class="action-num">06</p>
+        <p class="action-title">Déploiement sur Teams</p>
+        <p class="action-desc">Migration de l'interface web vers Teams pour maximiser l'adoption. Gestion des droits, SSO, intégration ServiceNow.</p>
+      </div>
+    </div>
+
+    <!-- COMPÉTENCES CLÉS -->
+    <div style="margin-top: 2.5rem;">
+      <p class="section-label">Compétences clés à mobiliser</p>
+      <h2 class="section-title" style="font-size: 1.2rem;">Par ordre de priorité</h2>
+      <div class="skills-grid">
+        <div class="skill-card">
+          <p class="skill-label">Temps 1 — Immédiat</p>
+          <p class="skill-title">Ingénierie de la connaissance</p>
+          <p class="skill-desc">Structurer, nettoyer et maintenir la base documentaire. Faire le lien entre les métiers et la technique pour l'indexation.</p>
+        </div>
+        <div class="skill-card">
+          <p class="skill-label">Temps 1 — Immédiat</p>
+          <p class="skill-title">Architecture IA & Développement</p>
+          <p class="skill-desc">Maîtrise RAG (chunking, indexation vectorielle, prompt engineering), orchestration d'agents, gestion du multimodal.</p>
+        </div>
+        <div class="skill-card">
+          <p class="skill-label">Temps 1 — Immédiat</p>
+          <p class="skill-title">Learning Design & Conduite du changement</p>
+          <p class="skill-desc">Concevoir les parcours d'apprentissage par profil, définir les niveaux de maîtrise, construire les mécaniques de gamification.</p>
+        </div>
+        <div class="skill-card">
+          <p class="skill-label">Temps 2 — Phase suivante</p>
+          <p class="skill-title">Data / Analytics & UX Design</p>
+          <p class="skill-desc">Dashboards de pilotage, suivi KPIs, analyse des conversations. Conception des 3 interfaces : chat, dashboard collaborateur, dashboard DG.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer fade-in">
+    <p class="footer-logo">Appi — Agent d'Apprentissage Proactif et Interactif</p>
+    <p class="footer-sub">Rydge Conseil · POC Akuiteo · Joelle GUERRA · Février 2026</p>
+  </footer>
+
+</div>
+
+<script>
+  // Fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) {
+        el.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Roadmap steps staggered reveal
+  const roadmapObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const steps = entry.target.querySelectorAll('.roadmap-step');
+        steps.forEach((step, i) => {
+          setTimeout(() => step.classList.add('visible'), i * 150);
+        });
+      }
+    });
+  }, { threshold: 0.1 });
+
+  const track = document.querySelector('.roadmap-track');
+  if (track) roadmapObs.observe(track);
+</script>
+
+</body>
+</html>
