@@ -1,9 +1,8 @@
 """
-ui/app.py — Interface Streamlit pour Appi - Compagnon d'apprentissage Akuiteo
+ui/app.py - Interface Streamlit pour Appi - Compagnon d'apprentissage Akuiteo
 Lancer avec : streamlit run ui/app.py
 """
 import sys
-import json
 import logging
 import datetime
 from pathlib import Path
@@ -17,10 +16,10 @@ from core.rag_engine import AkuiteoRAGEngine
 from core.vision_engine import AkuiteoVisionEngine
 from core.agent import AkuiteoAgent
 
-# ─── Configuration de la page ─────────────────────────────────────────────────
+# Configuration de la page
 st.set_page_config(
-    page_title="Appi — Compagnon d'apprentissage Akuiteo",
-    page_icon="🎓",
+    page_title="Appi - Compagnon Akuiteo",
+    page_icon="A",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -28,14 +27,9 @@ st.set_page_config(
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ─── CSS personnalisé ─────────────────────────────────────────────────────────
+# CSS personnalise
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
-    html, body, [class*="css"] {
-        font-family: 'DM Sans', sans-serif;
-    }
     .main-header {
         background: linear-gradient(135deg, #0F4C81 0%, #00A8D6 60%, #00C4A7 100%);
         padding: 1.8rem 2rem;
@@ -44,7 +38,7 @@ st.markdown("""
         color: white;
         box-shadow: 0 4px 20px rgba(0,168,214,0.25);
     }
-    .main-header h2 { margin:0; font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; }
+    .main-header h2 { margin:0; font-size: 1.8rem; font-weight: 700; }
     .main-header p { margin:6px 0 0 0; opacity:0.9; font-size: 0.95rem; }
     .tool-badge {
         display: inline-block;
@@ -56,15 +50,6 @@ st.markdown("""
     }
     .tool-rag { background: #E8F4FD; color: #1565C0; border: 1px solid #90CAF9; }
     .tool-vision { background: #F3E5F5; color: #6A1B9A; border: 1px solid #CE93D8; }
-    .source-box {
-        background: #F8F9FA;
-        border-left: 3px solid #00A8D6;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        margin: 4px 0;
-        color: #555;
-    }
     .feedback-box {
         background: #F0FBF8;
         border: 1px solid #00C4A7;
@@ -79,59 +64,68 @@ st.markdown("""
         padding: 12px 16px;
         margin-top: 8px;
     }
-    .paste-zone {
+    #paste-zone {
         border: 2px dashed #00A8D6;
         border-radius: 12px;
-        padding: 24px 16px;
+        padding: 28px 16px;
         text-align: center;
         color: #FFFFFF;
         font-size: 0.95rem;
         margin-bottom: 8px;
-        background: rgba(0, 168, 214, 0.15);
+        background: rgba(0, 168, 214, 0.18);
         cursor: pointer;
         transition: all 0.2s;
+        font-family: sans-serif;
     }
-    .paste-zone:hover {
-        background: rgba(0, 168, 214, 0.25);
+    #paste-zone.active {
+        background: rgba(0, 196, 167, 0.25);
         border-color: #00C4A7;
     }
+    #paste-preview {
+        display: none;
+        max-width: 100%;
+        border-radius: 8px;
+        margin-top: 8px;
+        border: 1px solid #00C4A7;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# ─── Composant copier-coller image (JS) ───────────────────────────────────────
+# Composant copier-coller image
 PASTE_COMPONENT = """
-<div class="paste-zone" id="paste-zone">
-    <strong style="font-size:1.05rem">Zone de collage &mdash; Ctrl+V ici</strong><br>
-    <span style="opacity:0.8; font-size:0.85rem">Copiez une capture d&#39;ecran puis cliquez dans cette zone et faites Ctrl+V</span>
+<div id="paste-zone" tabindex="0">
+    <strong style="font-size:1.1rem; display:block; margin-bottom:6px">
+        Zone de collage &mdash; Ctrl+V
+    </strong>
+    <span style="opacity:0.85; font-size:0.85rem">
+        Copiez une capture d&apos;ecran Akuiteo, cliquez ici, puis faites Ctrl+V
+    </span>
 </div>
-<canvas id="paste-canvas" style="display:none; max-width:100%; border-radius:8px; margin-top:8px;"></canvas>
+<img id="paste-preview" alt="Capture collee" />
 <script>
 (function() {
-    const zone = document.getElementById('paste-zone');
-    const canvas = document.getElementById('paste-canvas');
+    var zone = document.getElementById("paste-zone");
+    var preview = document.getElementById("paste-preview");
 
-    document.addEventListener('paste', function(e) {
-        const items = e.clipboardData && e.clipboardData.items;
+    zone.addEventListener("focus", function() {
+        zone.style.outline = "2px solid #00C4A7";
+    });
+    zone.addEventListener("blur", function() {
+        zone.style.outline = "none";
+    });
+
+    document.addEventListener("paste", function(e) {
+        var items = e.clipboardData && e.clipboardData.items;
         if (!items) return;
-        for (let i = 0; i < items.length; i++) {
-            if (items[i].type.indexOf('image') !== -1) {
-                const blob = items[i].getAsFile();
-                const reader = new FileReader();
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf("image") !== -1) {
+                var blob = items[i].getAsFile();
+                var reader = new FileReader();
                 reader.onload = function(ev) {
-                    const img = new Image();
-                    img.onload = function() {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        canvas.style.display = 'block';
-                        zone.innerHTML = '✅ <strong>Capture d\'écran collée !</strong> Posez votre question ci-dessous.';
-                        zone.style.background = '#E8F8F5';
-                        zone.style.borderColor = '#00C4A7';
-                        zone.style.color = '#00C4A7';
-                        // Envoyer l'image à Streamlit via une iframe hack
-                        const dataUrl = canvas.toDataURL('image/png');
-                        window.parent.postMessage({type: 'paste_image', data: dataUrl}, '*');
-                    };
-                    img.src = ev.target.result;
+                    preview.src = ev.target.result;
+                    preview.style.display = "block";
+                    zone.innerHTML = "<strong style='font-size:1rem; color:#00C4A7'>Capture collee avec succes !</strong><br><span style='font-size:0.8rem; opacity:0.8'>Pour changer, collez une nouvelle image</span>";
+                    zone.classList.add("active");
                 };
                 reader.readAsDataURL(blob);
                 break;
@@ -142,21 +136,20 @@ PASTE_COMPONENT = """
 </script>
 """
 
-# ─── Initialisation des composants (cached) ───────────────────────────────────
 
-@st.cache_resource(show_spinner="⚙️ Initialisation de l'index RAG...")
-def load_rag_engine() -> AkuiteoRAGEngine:
+@st.cache_resource(show_spinner="Initialisation de l index RAG...")
+def load_rag_engine():
     engine = AkuiteoRAGEngine()
     engine.build_index(force_rebuild=False)
     return engine
 
 
 @st.cache_resource
-def load_vision_engine() -> AkuiteoVisionEngine:
+def load_vision_engine():
     return AkuiteoVisionEngine()
 
 
-def get_agent() -> AkuiteoAgent:
+def get_agent():
     if "agent" not in st.session_state:
         rag = load_rag_engine()
         vision = load_vision_engine()
@@ -164,87 +157,75 @@ def get_agent() -> AkuiteoAgent:
     return st.session_state["agent"]
 
 
-def generate_ticket_content(conversation_history: list, image_attached: bool) -> str:
-    """Génère le contenu d'un ticket ServiceNow pour Akuiteo."""
+def generate_ticket_content(conversation_history, image_attached):
     now = datetime.datetime.now()
-    # Extraire la dernière question utilisateur comme titre
     last_user_msg = next(
         (msg["content"] for msg in reversed(conversation_history) if msg["role"] == "user"),
-        "Problème Akuiteo"
+        "Probleme Akuiteo"
     )
     short_title = last_user_msg[:80].replace("\n", " ").strip()
 
     lines = [
-        "# 🎫 Ticket ServiceNow — Support Akuiteo",
+        "# Ticket ServiceNow - Support Akuiteo",
         "",
         "## Informations du ticket",
         "",
-        f"| Champ | Valeur |",
-        f"|-------|--------|",
-        f"| **Numéro** | INC-{now.strftime('%Y%m%d%H%M%S')} |",
-        f"| **Date d'ouverture** | {now.strftime('%d/%m/%Y %H:%M')} |",
-        f"| **Catégorie** | Application métier |",
-        f"| **Sous-catégorie** | Akuiteo ERP |",
-        f"| **Priorité** | P3 - Normale |",
-        f"| **Statut** | Nouveau |",
-        f"| **Source** | Appi - Compagnon d'apprentissage |",
-        f"| **Titre** | {short_title} |",
-        f"| **Capture d'écran** | {'✅ Jointe' if image_attached else '❌ Non jointe'} |",
-        "",
-        "## Description",
-        "",
-        "Ticket généré automatiquement depuis Appi, le compagnon d'apprentissage Akuiteo.",
+        "| Champ | Valeur |",
+        "|-------|--------|",
+        "| **Numero** | INC-" + now.strftime("%Y%m%d%H%M%S") + " |",
+        "| **Date** | " + now.strftime("%d/%m/%Y %H:%M") + " |",
+        "| **Categorie** | Application metier |",
+        "| **Sous-categorie** | Akuiteo ERP |",
+        "| **Priorite** | P3 - Normale |",
+        "| **Statut** | Nouveau |",
+        "| **Source** | Appi - Compagnon d'apprentissage |",
+        "| **Titre** | " + short_title + " |",
+        "| **Capture** | " + ("Jointe" if image_attached else "Non jointe") + " |",
         "",
         "## Historique de conversation",
         "",
     ]
     for msg in conversation_history:
-        role = "👤 Utilisateur" if msg["role"] == "user" else "🎓 Appi"
-        content = msg["content"].replace("📸 *[Capture d'écran jointe]*\n\n", "")
-        lines.append(f"**{role}** :")
-        lines.append(f"> {content}")
+        role = "Utilisateur" if msg["role"] == "user" else "Appi"
+        content = msg["content"].replace("[Capture d'ecran jointe]", "[capture]")
+        lines.append("**" + role + "** :")
+        lines.append("> " + content.replace("\n", " "))
         lines.append("")
-
-    lines += [
-        "---",
-        "*Ticket généré par Appi - Compagnon d'apprentissage Akuiteo | Rydge Conseil*",
-    ]
+    lines.append("---")
+    lines.append("*Genere par Appi - Compagnon d'apprentissage Akuiteo | Rydge Conseil*")
     return "\n".join(lines)
 
 
-# ─── Sidebar ──────────────────────────────────────────────────────────────────
-
 def render_sidebar():
     with st.sidebar:
-        st.markdown("### 🗂️ Documents indexés")
+        st.markdown("### Documents indexes")
         doc_status = {
-            "📘 Livre Blanc Akuiteo":    DOCUMENTS["livre_blanc"].exists(),
-            "📋 Cas d'Usage CRM (POC)":  DOCUMENTS["cas_usages"].exists(),
-            "📊 Mode Opératoire CRM":     DOCUMENTS["mode_op_crm"].exists(),
+            "Livre Blanc Akuiteo":   DOCUMENTS["livre_blanc"].exists(),
+            "Cas d'Usage CRM (POC)": DOCUMENTS["cas_usages"].exists(),
+            "Mode Operatoire CRM":   DOCUMENTS["mode_op_crm"].exists(),
         }
         for name, exists in doc_status.items():
-            icon = "✅" if exists else "❌"
-            st.markdown(f"{icon} {name}")
+            icon = "OK" if exists else "MANQUANT"
+            st.markdown(f"{'✅' if exists else '❌'} {name}")
 
         st.divider()
 
-        if st.button("🔄 Reconstruire l'index RAG", use_container_width=True):
+        if st.button("Reconstruire l'index RAG", use_container_width=True):
             with st.spinner("Reconstruction en cours..."):
                 try:
                     rag = AkuiteoRAGEngine()
                     rag.build_index(force_rebuild=True)
                     load_rag_engine.clear()
                     st.session_state.pop("agent", None)
-                    st.success("Index reconstruit avec succès !")
+                    st.success("Index reconstruit !")
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Erreur : {e}")
+                    st.error("Erreur : " + str(e))
 
         st.divider()
 
-        if st.button("🗑️ Nouvelle conversation", use_container_width=True):
+        if st.button("Nouvelle conversation", use_container_width=True):
             st.session_state["messages"] = []
-            st.session_state.pop("pending_feedback", None)
             st.session_state.pop("pending_ticket", None)
             if "agent" in st.session_state:
                 st.session_state["agent"].reset_conversation()
@@ -252,25 +233,14 @@ def render_sidebar():
 
         st.divider()
         st.markdown("**Stack technique**")
-        st.markdown("""
-        - 🧠 **LLM** : Claude API (Anthropic)
-        - 🔍 **RAG** : LlamaIndex + BGE-M3
-        - 👁️ **Vision** : Claude multimodal
-        - 🔧 **Agent** : ReAct (tool_use)
-        - 🎨 **UI** : Streamlit
-        """)
+        st.markdown("LLM : Claude API | RAG : LlamaIndex | Vision : Claude multimodal | UI : Streamlit")
 
-
-# ─── Interface principale ─────────────────────────────────────────────────────
 
 def main():
-    # Header
     st.markdown("""
     <div class="main-header">
-        <h2>🎓 Appi - Compagnon d'apprentissage</h2>
-        <p>
-            Démo : Posez vos questions et remontez vos bugs sur Akuiteo · Joignez une capture d'écran pour une analyse visuelle
-        </p>
+        <h2>Appi - Compagnon d&#39;apprentissage</h2>
+        <p>Demo : Posez vos questions et remontez vos bugs sur Akuiteo &middot; Joignez une capture d&#39;ecran pour une analyse visuelle</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -278,117 +248,97 @@ def main():
 
     from config import ANTHROPIC_API_KEY
     if not ANTHROPIC_API_KEY:
-        st.error("⚠️ **ANTHROPIC_API_KEY** non configurée. Créez un fichier `.env` avec votre clé.")
+        st.error("ANTHROPIC_API_KEY non configuree.")
         st.stop()
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = []
 
-    # ── Affichage de l'historique ──────────────────────────────────────────
+    # Affichage historique
     for idx, msg in enumerate(st.session_state["messages"]):
-        with st.chat_message(msg["role"], avatar="🧑‍💼" if msg["role"] == "user" else "🎓"):
+        avatar = "U" if msg["role"] == "user" else "A"
+        with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             if msg.get("tools_used"):
                 tools_html = ""
                 for tool in msg["tools_used"]:
                     css_class = "tool-rag" if tool == "rag_search" else "tool-vision"
-                    label = "📚 RAG" if tool == "rag_search" else "👁️ Vision"
-                    tools_html += f'<span class="tool-badge {css_class}">{label}</span>'
+                    label = "RAG" if tool == "rag_search" else "Vision"
+                    tools_html += '<span class="tool-badge ' + css_class + '">' + label + '</span>'
                 st.markdown(tools_html, unsafe_allow_html=True)
 
-            # Feedback pour les messages assistant (sauf si déjà donné)
+            # Feedback
             if msg["role"] == "assistant" and not msg.get("feedback_given"):
-                fb_key = f"feedback_{idx}"
+                fb_key = "feedback_" + str(idx)
                 if st.session_state.get(fb_key) != "done":
-                    st.markdown('<div class="feedback-box">💬 <strong>Cette réponse vous a-t-elle aidé ?</strong></div>', unsafe_allow_html=True)
+                    st.markdown('<div class="feedback-box"><strong>Cette reponse vous a-t-elle aide ?</strong></div>', unsafe_allow_html=True)
                     col1, col2, col3 = st.columns([1, 1, 4])
                     with col1:
-                        if st.button("👍", key=f"up_{idx}", help="Réponse correcte"):
+                        if st.button("👍", key="up_" + str(idx)):
                             st.session_state[fb_key] = "done"
                             st.session_state["messages"][idx]["feedback_given"] = True
                             st.session_state["pending_ticket"] = idx
                             st.rerun()
                     with col2:
-                        if st.button("👎", key=f"down_{idx}", help="Réponse incorrecte"):
+                        if st.button("👎", key="down_" + str(idx)):
                             st.session_state[fb_key] = "done"
                             st.session_state["messages"][idx]["feedback_given"] = True
                             st.session_state["pending_ticket"] = idx
                             st.rerun()
                     with col3:
-                        comment = st.text_input("Commentaire (optionnel)", key=f"comment_{idx}", label_visibility="collapsed", placeholder="Précisez si besoin...")
-                        if comment and st.button("Envoyer", key=f"send_comment_{idx}"):
+                        comment = st.text_input("Commentaire", key="comment_" + str(idx), label_visibility="collapsed", placeholder="Precisez si besoin...")
+                        if comment and st.button("Envoyer", key="send_" + str(idx)):
                             st.session_state[fb_key] = "done"
                             st.session_state["messages"][idx]["feedback_given"] = True
                             st.rerun()
                 else:
-                    st.markdown("✅ *Merci pour votre retour !*")
+                    st.markdown("✅ Merci pour votre retour !")
 
-    # ── Proposition de création de ticket ─────────────────────────────────
+    # Proposition ticket ServiceNow
     if "pending_ticket" in st.session_state:
-        ticket_idx = st.session_state["pending_ticket"]
-        st.markdown('<div class="ticket-box">🎫 <strong>Souhaitez-vous créer un ticket informatique ?</strong><br><small>Il contiendra votre capture d\'écran et l\'historique de conversation.</small></div>', unsafe_allow_html=True)
+        st.markdown('<div class="ticket-box"><strong>Souhaitez-vous creer un ticket ServiceNow ?</strong><br><small>Il contiendra l\'historique de conversation.</small></div>', unsafe_allow_html=True)
         col_yes, col_no = st.columns([1, 1])
         with col_yes:
-            if st.button("✅ Créer le ticket", key="create_ticket"):
-                image_attached = any(
-                    "Capture d'écran" in msg.get("content", "")
-                    for msg in st.session_state["messages"]
-                )
-                ticket_content = generate_ticket_content(
-                    st.session_state["messages"],
-                    image_attached
-                )
-                # Sauvegarder le ticket
-                ticket_path = Path(f"ticket_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
-                ticket_path.write_text(ticket_content, encoding="utf-8")
+            if st.button("Creer le ticket", key="create_ticket"):
+                image_attached = any("capture" in msg.get("content", "").lower() for msg in st.session_state["messages"])
+                ticket_content = generate_ticket_content(st.session_state["messages"], image_attached)
+                filename = "ticket_" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + ".md"
                 st.session_state.pop("pending_ticket", None)
-                st.success(f"✅ Ticket créé : `{ticket_path.name}`")
+                st.success("Ticket pret au telechargement !")
                 st.download_button(
-                    label="📥 Télécharger le ticket",
+                    label="Telecharger le ticket",
                     data=ticket_content,
-                    file_name=ticket_path.name,
+                    file_name=filename,
                     mime="text/markdown",
                 )
-                st.rerun()
         with col_no:
-            if st.button("❌ Non merci", key="skip_ticket"):
+            if st.button("Non merci", key="skip_ticket"):
                 st.session_state.pop("pending_ticket", None)
                 st.rerun()
 
-    # ── Zone image (upload + paste) ────────────────────────────────────────
+    # Zone paste
     st.markdown("---")
+    st.components.v1.html(PASTE_COMPONENT, height=120)
 
-    # Zone copier-coller (HTML/JS)
-    st.components.v1.html(PASTE_COMPONENT, height=100)
-
-    # Upload classique en fallback
     uploaded_image = st.file_uploader(
-        "📎 Ou joignez une capture d'écran",
+        "Ou joignez une capture d'ecran",
         type=["png", "jpg", "jpeg", "webp"],
         label_visibility="visible",
-        help="Alternative au copier-coller",
     )
 
-    # ── Champ de saisie ────────────────────────────────────────────────────
-    user_input = st.chat_input(
-        "Posez votre question sur Akuiteo... (ex: Comment créer une opportunité ?)"
-    )
+    user_input = st.chat_input("Posez votre question sur Akuiteo...")
 
-    # ── Traitement de la question ──────────────────────────────────────────
     if user_input:
         display_content = user_input
         if uploaded_image:
-            display_content = f"📸 *[Capture d'écran jointe]*\n\n{user_input}"
+            display_content = "[Capture jointe] " + user_input
 
-        st.session_state["messages"].append({
-            "role": "user",
-            "content": display_content,
-        })
+        st.session_state["messages"].append({"role": "user", "content": display_content})
 
-        with st.chat_message("user", avatar="🧑‍💼"):
+        with st.chat_message("user"):
             st.markdown(display_content)
 
-        with st.chat_message("assistant", avatar="🎓"):
+        with st.chat_message("assistant"):
             with st.spinner("Analyse en cours..."):
                 try:
                     agent = get_agent()
@@ -397,14 +347,9 @@ def main():
                         uploaded_image.seek(0)
                         image_data = uploaded_image
 
-                    result = agent.run(
-                        user_message=user_input,
-                        image_input=image_data,
-                    )
-
+                    result = agent.run(user_message=user_input, image_input=image_data)
                     response_text = result["response"]
                     tools_used = result.get("tools_used", [])
-                    iterations = result.get("iterations", 1)
 
                     st.markdown(response_text)
 
@@ -412,9 +357,8 @@ def main():
                         tools_html = ""
                         for tool in tools_used:
                             css_class = "tool-rag" if tool == "rag_search" else "tool-vision"
-                            label = "📚 RAG" if tool == "rag_search" else "👁️ Vision"
-                            tools_html += f'<span class="tool-badge {css_class}">{label}</span>'
-                        tools_html += f'<span style="font-size:0.7rem; color:#999; margin-left:8px">({iterations} iter.)</span>'
+                            label = "RAG" if tool == "rag_search" else "Vision"
+                            tools_html += '<span class="tool-badge ' + css_class + '">' + label + '</span>'
                         st.markdown(tools_html, unsafe_allow_html=True)
 
                     st.session_state["messages"].append({
@@ -426,39 +370,36 @@ def main():
                     st.rerun()
 
                 except Exception as e:
-                    error_msg = f"❌ Erreur de l'agent : {str(e)}"
+                    error_msg = "Erreur : " + str(e)
                     st.error(error_msg)
-                    logger.exception("Erreur agent")
                     st.session_state["messages"].append({
                         "role": "assistant",
                         "content": error_msg,
                         "feedback_given": True,
                     })
 
-    # ── Questions suggérées ─────────────────────────────────────────────────
+    # Questions suggerees
     if not st.session_state["messages"]:
         st.markdown("---")
-        st.markdown("**💡 Questions suggérées pour démarrer :**")
+        st.markdown("**Questions suggerees :**")
         suggestions = [
-            "Comment créer une nouvelle opportunité dans le CRM ?",
+            "Comment creer une opportunite dans le CRM ?",
             "Qu'est-ce qu'un Portefeuille dans Akuiteo ?",
-            "Comment déplacer une opportunité dans le KANBAN ?",
-            "À quoi servent les pictogrammes rouge, vert et orange sur les tuiles ?",
-            "Comment rechercher un compte avec des caractères joker ?",
+            "Comment deplacer une opportunite dans le KANBAN ?",
+            "A quoi servent les pictogrammes rouge, vert et orange ?",
+            "Comment rechercher un compte avec des caracteres joker ?",
         ]
         cols = st.columns(len(suggestions))
         for i, (col, suggestion) in enumerate(zip(cols, suggestions)):
             with col:
-                if st.button(suggestion, key=f"sug_{i}", use_container_width=True):
+                if st.button(suggestion, key="sug_" + str(i), use_container_width=True):
                     st.session_state["pending_question"] = suggestion
                     st.rerun()
 
     if "pending_question" in st.session_state:
         q = st.session_state.pop("pending_question")
-        st.info(f"Question sélectionnée : **{q}**\n\nCopiez-la dans le champ de saisie ci-dessus.")
+        st.info("Question selectionnee : **" + q + "** - Copiez-la dans le champ ci-dessus.")
 
 
 if __name__ == "__main__":
     main()
-
-
