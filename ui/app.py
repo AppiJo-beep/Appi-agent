@@ -99,8 +99,8 @@ st.markdown("""
 # ─── Composant copier-coller image (JS) ───────────────────────────────────────
 PASTE_COMPONENT = """
 <div class="paste-zone" id="paste-zone">
-    🖼️ <strong style="font-size:1.05rem">Zone de collage — Ctrl+V ici</strong><br>
-    <span style="opacity:0.8; font-size:0.85rem">Copiez une capture d'écran puis cliquez dans cette zone et faites Ctrl+V</span>
+    <strong style="font-size:1.05rem">Zone de collage &mdash; Ctrl+V ici</strong><br>
+    <span style="opacity:0.8; font-size:0.85rem">Copiez une capture d'ecran puis cliquez dans cette zone et faites Ctrl+V</span>
 </div>
 <canvas id="paste-canvas" style="display:none; max-width:100%; border-radius:8px; margin-top:8px;"></canvas>
 <script>
